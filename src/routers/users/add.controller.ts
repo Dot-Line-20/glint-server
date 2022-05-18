@@ -1,44 +1,63 @@
 import { Request, Response, NextFunction } from 'express'
-import { getFirestore } from 'firebase-admin/firestore'
-import { isExistingId, isExistingEmail } from '@lib/exist'
+import { getFirestore, Timestamp } from 'firebase-admin/firestore'
+import { isExistingId } from '@lib/exist'
 import HttpException from '@exceptions/http'
 import UserDto from './user.dto'
 import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
 
+interface User extends UserDto {
+  salt: string
+  createdAt: Timestamp
+}
+
 // addUser
 export default async function (
-  request: Request<unknown, unknown, UserDto>,
+  request: Request<unknown, unknown, Omit<User, 'salt'>>,
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const body: UserDto & { salt: string } = Object.assign(
-    {},
-    {
-      email: request.body.email,
-      name: request.body.name,
-      id: request.body.id,
-      password: request.body.password,
-      birth: request.body.birth,
-      salt: '',
-    }
-  )
+  const body: Omit<User, 'createdAt'> = {
+    email: request.body.email,
+    name: request.body.name,
+    id: request.body.id,
+    password: request.body.password,
+    birth: request.body.birth,
+    salt: '',
+  }
 
   try {
-    if (new Date(body['birth']).getTime() >= Date.now()) {
-      throw new HttpException(400, 'invalid birth')
-    }
-
     const id: string = createHash('sha256')
       .update(body.email)
       .digest()
       .toString('hex')
 
-    if (await isExistingEmail(id)) {
-      throw new HttpException(400, 'existing email')
+    const user: User & { isEmailVerified: boolean; verificationKey: string } =
+      (await (
+        await getFirestore().collection('users').doc(id).get()
+      ).data()) as User & { isEmailVerified: boolean; verificationKey: string }
+
+    if (typeof user === 'undefined') {
+      throw new HttpException(400, 'non-existing temporary user')
+    }
+
+    if (user.verificationKey !== request.query.verificationKey) {
+      throw new HttpException(400, 'invalid verificationKey')
+    }
+
+    if (user.createdAt.seconds * 1000 + 180000 < Date.now()) {
+      throw new HttpException(400, 'expired verificationKey')
+    }
+
+    if (!user.isEmailVerified) {
+      throw new HttpException(400, 'unverified email')
     }
 
     if (await isExistingId(body.id)) {
       throw new HttpException(400, 'existing id')
+    }
+
+    if (new Date(body['birth']).getTime() >= Date.now()) {
+      throw new HttpException(400, 'invalid birth')
     }
 
     body.salt = randomBytes(128).toString('base64')

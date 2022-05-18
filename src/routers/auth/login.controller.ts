@@ -4,8 +4,13 @@ import { isExistingEmail } from '@lib/exist'
 import HttpException from '@exceptions/http'
 import LoginDto from './login.dto'
 import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
-import userDto from '../users/user.dto'
+import UserDto from '../users/user.dto'
 import { sign } from 'jsonwebtoken'
+
+interface User extends UserDto {
+	salt: string
+	tokenKey: string
+}
 
 // login
 export default async function (
@@ -13,13 +18,11 @@ export default async function (
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const body: LoginDto = Object.assign(
-    {},
-    {
-      email: request.body.email,
-      password: request.body.password,
-    }
-  )
+  const body: LoginDto =
+	{
+		email: request.body.email,
+		password: request.body.password,
+	}
 
   const id: string = createHash('sha256')
     .update(body.email)
@@ -31,9 +34,13 @@ export default async function (
       throw new HttpException(400, 'non-existing email')
     }
 
-    const user: userDto & { salt: string; tokenKey: string } = (
+    const user: User = (
       await getFirestore().collection('users').doc(id).get()
-    ).data() as userDto & { salt: string; tokenKey: string }
+    ).data() as User
+
+		if(typeof(user.password) !== 'string') {
+			throw new HttpException(400, 'temporary user')
+		}
 
     if (
       user.password !==
