@@ -22,7 +22,7 @@ export default async function (
   }
 
   try {
-    if (new Date(body['birth']).getTime() >= Date.now()) {
+    if (new Date(body.birth).getTime() >= Date.now()) {
       throw new HttpException(400, 'invalid birth')
     }
 

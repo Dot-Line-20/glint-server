@@ -9,8 +9,8 @@ import { sign } from 'jsonwebtoken'
 import { getDocumentId, getEncryptedPassword } from '@lib/encryption'
 
 interface User extends UserDto {
-	salt: string
-	tokenKey: string
+  salt: string
+  tokenKey: string
 }
 
 // login
@@ -19,11 +19,10 @@ export default async function (
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const body: LoginDto =
-	{
-		email: request.body.email,
-		password: request.body.password,
-	}
+  const body: LoginDto = {
+    email: request.body.email,
+    password: request.body.password,
+  }
 
   const id: string = getDocumentId(body.email)
 
@@ -36,9 +35,9 @@ export default async function (
       await getFirestore().collection('users').doc(id).get()
     ).data() as User
 
-		if(typeof(user.password) !== 'string') {
-			throw new HttpException(400, 'temporary user')
-		}
+    if (typeof user.password !== 'string') {
+      throw new HttpException(400, 'temporary user')
+    }
 
     if (user.password !== getEncryptedPassword(body.password, user.salt)) {
       throw new HttpException(400, 'non-matching password')
