@@ -3,7 +3,8 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { isExistingId, isExistingEmail } from '@lib/exist'
 import HttpException from '@exceptions/http'
 import UserDto from './user.dto'
-import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
+import { randomBytes } from 'crypto'
+import { getDocumentId, getEncryptedPassword } from '@lib/encryption'
 
 // addUser
 export default async function (
@@ -28,10 +29,7 @@ export default async function (
       throw new HttpException(400, 'invalid birth')
     }
 
-    const id: string = createHash('sha256')
-      .update(body.email)
-      .digest()
-      .toString('hex')
+    const id: string = getDocumentId(body.email)
 
     if (await isExistingEmail(id)) {
       throw new HttpException(400, 'existing email')
@@ -47,13 +45,7 @@ export default async function (
       body.salt = body.salt.slice(0, -1)
     }
 
-    body.password = pbkdf2Sync(
-      body.password,
-      body.salt,
-      Number(process.env.PBKDF2_LOOP),
-      32,
-      'sha256'
-    ).toString('hex')
+    body.password = getEncryptedPassword(body.password, body.salt)
 
     await getFirestore().collection('users').doc(id).set(body)
 

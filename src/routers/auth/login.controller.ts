@@ -6,6 +6,7 @@ import LoginDto from './login.dto'
 import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
 import UserDto from '../users/user.dto'
 import { sign } from 'jsonwebtoken'
+import { getDocumentId, getEncryptedPassword } from '@lib/encryption'
 
 interface User extends UserDto {
 	salt: string
@@ -24,10 +25,7 @@ export default async function (
 		password: request.body.password,
 	}
 
-  const id: string = createHash('sha256')
-    .update(body.email)
-    .digest()
-    .toString('hex')
+  const id: string = getDocumentId(body.email)
 
   try {
     if (!(await isExistingEmail(id))) {
@@ -42,16 +40,7 @@ export default async function (
 			throw new HttpException(400, 'temporary user')
 		}
 
-    if (
-      user.password !==
-      pbkdf2Sync(
-        body.password,
-        user.salt,
-        Number(process.env.PBKDF2_LOOP),
-        32,
-        'sha256'
-      ).toString('hex')
-    ) {
+    if (user.password !== getEncryptedPassword(body.password, user.salt)) {
       throw new HttpException(400, 'non-matching password')
     }
 
