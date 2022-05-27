@@ -12,17 +12,14 @@ export default async function (
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const body: UserDto & { salt: string } = Object.assign(
-    {},
-    {
-      email: request.body.email,
-      name: request.body.name,
-      id: request.body.id,
-      password: request.body.password,
-      birth: request.body.birth,
-      salt: '',
-    }
-  )
+  const body: UserDto & { salt: string } = {
+    email: request.body.email,
+    name: request.body.name,
+    id: request.body.id,
+    password: request.body.password,
+    birth: request.body.birth,
+    salt: '',
+  }
 
   try {
     if (new Date(body['birth']).getTime() >= Date.now()) {
