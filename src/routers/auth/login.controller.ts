@@ -3,7 +3,7 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { isExistingEmail } from '@lib/exist'
 import HttpException from '@exceptions/http'
 import LoginDto from './login.dto'
-import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
+import { randomBytes } from 'crypto'
 import UserDto from '../users/user.dto'
 import { sign } from 'jsonwebtoken'
 import { getDocumentId, getEncryptedPassword } from '@lib/encryption'
@@ -59,15 +59,21 @@ export default async function (
     response.jsend.success({
       refreshToken: sign(
         {
-          exp: Math.trunc(Date.now() / 1000) + 7776000,
+          id: user['id'],
         },
-        user.tokenKey
+        user.tokenKey,
+        {
+          expiresIn: '90d',
+        }
       ),
       accessToken: sign(
         {
-          exp: Math.trunc(Date.now() / 1000) + 3600,
+          id: user['id'],
         },
-        process.env.ACCESS_TOKEN_KEY
+        process.env.ACCESS_TOKEN_KEY,
+        {
+          expiresIn: '1h',
+        }
       ),
     })
   } catch (error: any) {
