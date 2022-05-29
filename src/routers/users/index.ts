@@ -1,16 +1,16 @@
 import bodyValidator from '@middleware/validator'
 import { IRouters } from '@Ctypes/index'
-import addUser from './addUser.controller'
+import addUserHandler from './add.controller'
 import UserDto from './user.dto'
 
 // Register
 export default {
-  root: '/register',
+  root: '/users',
   routers: [
     {
-      path: '/add',
+      path: '',
       method: 'post',
-      handler: addUser,
+      handler: addUserHandler,
       middleware: [bodyValidator(UserDto)],
     },
   ],
