@@ -44,11 +44,7 @@ export default async function (
     }
 
     if (typeof user.tokenKey !== 'string') {
-      user.tokenKey = randomBytes(32).toString('base64')
-
-      while (user.tokenKey.charAt(user.tokenKey.length - 1) === '=') {
-        user.tokenKey = user.tokenKey.slice(0, -1)
-      }
+      user.tokenKey = randomBytes(32).toString('base64').slice(0, -1)
 
       await getFirestore()
         .collection('users')
