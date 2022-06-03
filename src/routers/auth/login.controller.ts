@@ -3,13 +3,14 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { isExistingEmail } from '@lib/exist'
 import HttpException from '@exceptions/http'
 import LoginDto from './login.dto'
-import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
+import { randomBytes } from 'crypto'
 import UserDto from '../users/user.dto'
 import { sign } from 'jsonwebtoken'
+import { getDocumentId, getEncryptedPassword } from '@lib/encryption'
 
 interface User extends UserDto {
-	salt: string
-	tokenKey: string
+  salt: string
+  tokenKey: string
 }
 
 // login
@@ -18,16 +19,12 @@ export default async function (
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const body: LoginDto =
-	{
-		email: request.body.email,
-		password: request.body.password,
-	}
+  const body: LoginDto = {
+    email: request.body.email,
+    password: request.body.password,
+  }
 
-  const id: string = createHash('sha256')
-    .update(body.email)
-    .digest()
-    .toString('hex')
+  const id: string = getDocumentId(body.email)
 
   try {
     if (!(await isExistingEmail(id))) {
@@ -38,29 +35,16 @@ export default async function (
       await getFirestore().collection('users').doc(id).get()
     ).data() as User
 
-		if(typeof(user.password) !== 'string') {
-			throw new HttpException(400, 'temporary user')
-		}
+    if (typeof user.password !== 'string') {
+      throw new HttpException(400, 'temporary user')
+    }
 
-    if (
-      user.password !==
-      pbkdf2Sync(
-        body.password,
-        user.salt,
-        Number(process.env.PBKDF2_LOOP),
-        32,
-        'sha256'
-      ).toString('hex')
-    ) {
+    if (user.password !== getEncryptedPassword(body.password, user.salt)) {
       throw new HttpException(400, 'non-matching password')
     }
 
     if (typeof user.tokenKey !== 'string') {
-      user.tokenKey = randomBytes(32).toString('base64')
-
-      while (user.tokenKey.charAt(user.tokenKey.length - 1) === '=') {
-        user.tokenKey = user.tokenKey.slice(0, -1)
-      }
+      user.tokenKey = randomBytes(32).toString('base64').slice(0, -1)
 
       await getFirestore()
         .collection('users')
@@ -71,15 +55,21 @@ export default async function (
     response.jsend.success({
       refreshToken: sign(
         {
-          exp: Math.trunc(Date.now() / 1000) + 7776000,
+          id: user['id'],
         },
-        user.tokenKey
+        user.tokenKey,
+        {
+          expiresIn: '90d',
+        }
       ),
       accessToken: sign(
         {
-          exp: Math.trunc(Date.now() / 1000) + 3600,
+          id: user['id'],
         },
-        process.env.ACCESS_TOKEN_KEY
+        process.env.ACCESS_TOKEN_KEY,
+        {
+          expiresIn: '1h',
+        }
       ),
     })
   } catch (error: any) {

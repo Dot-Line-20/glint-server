@@ -1,22 +1,18 @@
 import { Request, Response, NextFunction } from 'express'
-import { getFirestore, Timestamp } from 'firebase-admin/firestore'
-import { isExistingId } from '@lib/exist'
+import { getFirestore } from 'firebase-admin/firestore'
+import { isExistingId, isExistingEmail } from '@lib/exist'
 import HttpException from '@exceptions/http'
 import UserDto from './user.dto'
-import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
-
-interface User extends UserDto {
-  salt: string
-  createdAt: Timestamp
-}
+import { randomBytes } from 'crypto'
+import { getDocumentId, getEncryptedPassword } from '@lib/encryption'
 
 // addUser
 export default async function (
-  request: Request<unknown, unknown, Omit<User, 'salt'>>,
+  request: Request<unknown, unknown, UserDto>,
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const body: Omit<User, 'createdAt'> = {
+  const body: UserDto & { salt: string } = {
     email: request.body.email,
     name: request.body.name,
     id: request.body.id,
@@ -26,38 +22,18 @@ export default async function (
   }
 
   try {
-    const id: string = createHash('sha256')
-      .update(body.email)
-      .digest()
-      .toString('hex')
-
-    const user: User & { isEmailVerified: boolean; verificationKey: string } =
-      (await (
-        await getFirestore().collection('users').doc(id).get()
-      ).data()) as User & { isEmailVerified: boolean; verificationKey: string }
-
-    if (typeof user === 'undefined') {
-      throw new HttpException(400, 'non-existing temporary user')
+    if (new Date(body.birth).getTime() >= Date.now()) {
+      throw new HttpException(400, 'invalid birth')
     }
 
-    if (user.verificationKey !== request.query.verificationKey) {
-      throw new HttpException(400, 'invalid verificationKey')
-    }
+    const id: string = getDocumentId(body.email)
 
-    if (user.createdAt.seconds * 1000 + 180000 < Date.now()) {
-      throw new HttpException(400, 'expired verificationKey')
-    }
-
-    if (!user.isEmailVerified) {
-      throw new HttpException(400, 'unverified email')
+    if (await isExistingEmail(id)) {
+      throw new HttpException(400, 'existing email')
     }
 
     if (await isExistingId(body.id)) {
       throw new HttpException(400, 'existing id')
-    }
-
-    if (new Date(body['birth']).getTime() >= Date.now()) {
-      throw new HttpException(400, 'invalid birth')
     }
 
     body.salt = randomBytes(128).toString('base64')
@@ -66,13 +42,7 @@ export default async function (
       body.salt = body.salt.slice(0, -1)
     }
 
-    body.password = pbkdf2Sync(
-      body.password,
-      body.salt,
-      Number(process.env.PBKDF2_LOOP),
-      32,
-      'sha256'
-    ).toString('hex')
+    body.password = getEncryptedPassword(body.password, body.salt)
 
     await getFirestore().collection('users').doc(id).set(body)
 
