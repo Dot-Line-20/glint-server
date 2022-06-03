@@ -7,17 +7,9 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "outDir": "./dist",
-    "baseUrl": "./",
-    "typeRoots": ["./src/types", "./node_modules/@types"],
-    "paths": {
-      "@lib/*": ["./src/lib/*"],
-      "@exceptions/*": ["./src/exceptions/*"],
-      "@interface/*": ["./src/interface/*"],
-      "@middleware/*": ["./src/middleware/*"],
-      "@Ctypes/*": ["./src/types/*"]
-    }
+    "baseUrl": "./src",
+    "typeRoots": ["./src/types"]
   },
-  "exclude": ["./service-flow/**/*"],
   "ts-node": {
     "files": true
   }

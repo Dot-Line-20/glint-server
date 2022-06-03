@@ -1,5 +1,5 @@
-import bodyValidator from '@middleware/validator'
-import { IRouters } from '@Ctypes/index'
+import bodyValidator from 'middleware/validator'
+import type { IRouters } from 'types/index'
 import login from './login.controller'
 import loginDto from './login.dto'
 

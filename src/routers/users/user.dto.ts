@@ -10,21 +10,21 @@ import {
 // UserDto
 export default class {
   @IsEmail()
-  public email: string
+  public email!: string
 
   @IsString()
   @Length(1, 20)
-  public name: string
+  public name!: string
 
   @Matches(/^[0-9A-z_]+$/, {
     message: 'id must contain only letters and numbers with underscore',
   })
   @Length(4, 15)
-  public id: string
+  public id!: string
 
   @IsHash('sha256')
-  public password: string
+  public password!: string
 
   @IsDateString()
-  public birth: string
+  public birth!: string
 }

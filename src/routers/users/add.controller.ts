@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction } from 'express'
 import { getFirestore } from 'firebase-admin/firestore'
-import { isExistingId, isExistingEmail } from '@lib/exist'
-import HttpException from '@exceptions/http'
-import UserDto from './user.dto'
+import { isExistingId, isExistingEmail } from 'lib/exist'
+import HttpException from 'exceptions/http'
+import type UserDto from './user.dto'
 import { randomBytes } from 'crypto'
-import { getDocumentId, getEncryptedPassword } from '@lib/encryption'
+import { getDocumentId, getEncryptedPassword } from 'lib/encryption'
 
 // addUser
 export default async function (

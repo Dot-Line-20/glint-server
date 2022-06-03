@@ -1,11 +1,13 @@
-import { NextFunction, Response } from 'express'
-import HttpException from '@exceptions/http'
+import type { Request, NextFunction, Response } from 'express'
+import type HttpException from 'exceptions/http'
 
 // errorHandler
 export default function (
   error: HttpException,
-  request: unknown,
+  _req: Request,
   response: Response,
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ): void {
   const more: unknown = error?.more
@@ -19,8 +21,4 @@ export default function (
     .jsend[response.statusCode < 500 ? 'fail' : 'error'](
       Object.assign({ message: error.message || 'something went wrong' }, more)
     )
-
-  next()
-
-  return
 }

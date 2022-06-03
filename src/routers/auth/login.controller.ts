@@ -1,12 +1,12 @@
-import { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction } from 'express'
 import { getFirestore } from 'firebase-admin/firestore'
-import { isExistingEmail } from '@lib/exist'
-import HttpException from '@exceptions/http'
-import LoginDto from './login.dto'
+import { isExistingEmail } from 'lib/exist'
+import HttpException from 'exceptions/http'
+import type LoginDto from './login.dto'
 import { randomBytes } from 'crypto'
-import UserDto from '../users/user.dto'
+import type UserDto from '../users/user.dto'
 import { sign } from 'jsonwebtoken'
-import { getDocumentId, getEncryptedPassword } from '@lib/encryption'
+import { getDocumentId, getEncryptedPassword } from 'lib/encryption'
 
 interface User extends UserDto {
   salt: string

@@ -1,4 +1,4 @@
-import { IRouters } from '@Ctypes/index'
+import type { IRouters } from 'types/index'
 import { rootHandler } from './root.handler'
 
 // Root

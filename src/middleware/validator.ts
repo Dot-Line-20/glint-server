@@ -1,11 +1,11 @@
-import { Request, NextFunction, RequestHandler } from 'express'
-import { plainToInstance } from 'class-transformer'
+import type { Request, NextFunction, RequestHandler } from 'express'
+import { ClassConstructor, plainToInstance } from 'class-transformer'
 import { validate, ValidationError } from 'class-validator'
-import HttpException from '@exceptions/http'
+import HttpException from 'exceptions/http'
 
 // bodyValidateHandler
-export default function (type: any): RequestHandler {
-  return (request: Request, response: unknown, next: NextFunction): void => {
+export default function (type: ClassConstructor<any>): RequestHandler {
+  return (request: Request, _, next: NextFunction): void => {
     const body = request.body
 
     if (typeof body === 'undefined') {
@@ -24,8 +24,8 @@ export default function (type: any): RequestHandler {
 
         const exceptions: string[] = []
 
-        for (const { constraints } of errors) {
-          exceptions.push(Object.values(constraints)[0])
+        for (const { constraints = {} } of errors) {
+          exceptions.push(Object.values(constraints).join(', '))
         }
 
         next(
