@@ -28,3 +28,8 @@ export default class {
   @IsDateString()
   public birth: string
 }
+
+export class TempUserDto {
+  @IsEmail()
+  public email: string
+}
