@@ -1,24 +1,19 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "target": "es2019",
+    "outDir": "dist",
+    "baseUrl": "src",
+    "target": "es6",
     "module": "commonjs",
+    "strict": true,
+    "checkJs": true,
     "removeComments": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "typeRoots": ["./src/types", "./node_modules/@types"],
-    "paths": {
-      "@lib/*": ["./src/lib/*"],
-      "@exceptions/*": ["./src/exceptions/*"],
-      "@interface/*": ["./src/interface/*"],
-      "@middleware/*": ["./src/middleware/*"],
-      "@Ctypes/*": ["./src/types/*"]
-    }
+    "resolveJsonModule": true,
+    "allowUnreachableCode": false,
+    "experimentalDecorators": true,
+    "importsNotUsedAsValues": "error",
+    "typeRoots": ["src/types"]
   },
-  "exclude": ["./service-flow/**/*"],
-  "ts-node": {
-    "files": true
-  }
+  "exclude": ["dist", "node_modules"],
+  "ts-node": { "files": true }
 }
