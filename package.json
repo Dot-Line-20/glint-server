@@ -6,9 +6,9 @@
     "node": "16.x"
   },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon",
+    "dev": "cross-env NODE_ENV=development NODE_PATH=src nodemon",
+    "start": "npm run build && cross-env NODE_ENV=production NODE_PATH=dist node dist/server.js",
     "build": "rm -fr dist & tsc -p .",
-    "deploy": "git add . && git commit -m \"chore: herokudeploy\" && git push heroku +main",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier .",

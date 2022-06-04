@@ -1,6 +1,7 @@
 import { getFirestore } from 'firebase-admin/firestore'
 import { isExistingEmail } from 'lib/exist'
 import HttpException from 'exceptions/http'
+import createError from 'http-errors'
 import { randomBytes } from 'crypto'
 import { sign } from 'jsonwebtoken'
 import { getDocumentId, getEncryptedPassword } from 'lib/encryption'
@@ -29,7 +30,7 @@ export default async function (
 
   try {
     if (!(await isExistingEmail(id))) {
-      throw new HttpException(400, 'non-existing email')
+      next(createError(400, 'non-existing email'))
     }
 
     const user: User = (
