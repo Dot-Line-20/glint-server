@@ -1,8 +1,9 @@
-import bodyValidator from '@middleware/validator'
-import { IRouters } from '@Ctypes/index'
+import bodyValidator from 'middleware/validator'
 import login from './login.controller'
 import verify from './verify.controller'
 import loginDto from './login.dto'
+
+import type { IRouters } from 'types/index'
 
 // Register
 export default {

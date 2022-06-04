@@ -1,6 +1,6 @@
 import express, { Request, NextFunction } from 'express'
 import { initializeApp, applicationDefault } from 'firebase-admin/app'
-import errorHandler from '@middleware/error'
+import errorHandler from 'middleware/error'
 import controllers from './routers'
 import { join } from 'path/posix'
 import { middleware as jsendMiddleware } from 'jsend'
@@ -34,7 +34,8 @@ export default class {
               request.config = config
               next()
             },
-          ].concat(middleware),
+            ...middleware,
+          ],
           handler
         )
       }

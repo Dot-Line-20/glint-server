@@ -84,6 +84,7 @@ node_modules/
 #!.yarn/cache
 
 # Custom
-service-flow/
-src/admin/
-test.http
+*.http
+service-flow
+src/admin
+dist

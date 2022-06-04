@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from 'express'
 import { getFirestore, Timestamp } from 'firebase-admin/firestore'
-//import { isExistingEmail } from '@lib/exist'
-import HttpException from '@exceptions/http'
+import HttpException from 'exceptions/http'
 import { createHash, randomBytes } from 'crypto'
-import UserDto from '../users/user.dto'
+
+import type { Request, Response, NextFunction } from 'express'
+import type UserDto from '../users/user.dto'
 
 interface User extends Pick<UserDto, 'email'> {
   verificationKey: string
