@@ -1,7 +1,8 @@
-import { Request, NextFunction, RequestHandler } from 'express'
 import { plainToInstance } from 'class-transformer'
 import { validate, ValidationError } from 'class-validator'
-import HttpException from '@exceptions/http'
+import HttpException from 'exceptions/http'
+
+import type { Request, NextFunction, RequestHandler } from 'express'
 
 // bodyValidateHandler
 export default function (type: any): RequestHandler {
@@ -24,8 +25,8 @@ export default function (type: any): RequestHandler {
 
         const exceptions: string[] = []
 
-        for (const { constraints } of errors) {
-          exceptions.push(Object.values(constraints)[0])
+        for (const { constraints = [] } of errors) {
+          exceptions.push(Object.values(constraints).join(', '))
         }
 
         next(

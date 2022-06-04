@@ -1,5 +1,5 @@
-import { NextFunction, Response } from 'express'
-import HttpException from '@exceptions/http'
+import type { NextFunction, Response } from 'express'
+import type HttpException from 'exceptions/http'
 
 // errorHandler
 export default function (

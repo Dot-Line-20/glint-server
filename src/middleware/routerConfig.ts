@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express'
+import type { Response, NextFunction } from 'express'
 
 // routerConfigHandler
 export default function (
