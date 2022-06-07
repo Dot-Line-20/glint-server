@@ -1,7 +1,7 @@
 import { createHash, pbkdf2Sync } from 'crypto'
 
 export function getDocumentId(email: string): string {
-  return createHash('sha526').update(email).digest('hex')
+  return createHash('sha256').update(email).digest('hex')
 }
 
 export function getEncryptedPassword(password: string, salt: string): string {

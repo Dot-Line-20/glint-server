@@ -1,26 +1,24 @@
 import type { NextFunction, Response } from 'express'
-import type HttpException from 'exceptions/http'
+import type { HttpError } from 'http-errors'
 
 // errorHandler
 export default function (
-  error: HttpException,
-  request: unknown,
+  error: HttpError,
+  _request: unknown,
   response: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ): void {
-  const more: unknown = error?.more
-
-  if (typeof more !== 'undefined') {
-    console.log(more)
-  }
+  const detail = error?.detail || { expose: true }
 
   response
     .status(error.status || 500)
     .jsend[response.statusCode < 500 ? 'fail' : 'error'](
-      Object.assign({ message: error.message || 'something went wrong' }, more)
+      Object.assign(
+        {
+          message: error.message,
+        },
+        detail?.expose ? { detail: detail.message } : {}
+      )
     )
-
-  next()
-
-  return
 }
