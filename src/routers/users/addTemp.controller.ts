@@ -1,5 +1,5 @@
 import { getFirestore, Timestamp } from 'firebase-admin/firestore'
-import HttpException from 'exceptions/http'
+import createError from 'http-errors'
 import { createHash, randomBytes } from 'crypto'
 
 import type { Request, Response, NextFunction } from 'express'
@@ -35,7 +35,7 @@ export default async function (
     ).data()) as User & { password: string }
 
     if (typeof user !== 'undefined' && typeof user.password === 'string') {
-      throw new HttpException(400, 'existing email')
+      return next(createError(400, 'existing email'))
     }
 
     body.verificationKey = randomBytes(64).toString('hex')
@@ -45,15 +45,14 @@ export default async function (
     await getFirestore().collection('users').doc(id).set(body)
 
     response.jsend.success({ message: 'sucess' })
-  } catch (error: any) {
-    console.log(error.message)
-
-    next(
-      error instanceof HttpException
-        ? error
-        : new HttpException(500, 'server error')
+  } catch (error) {
+    return next(
+      createError(500, 'server error', {
+        detail: {
+          expose: false,
+          message: error,
+        },
+      })
     )
   }
-
-  return
 }

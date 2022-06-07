@@ -1,8 +1,8 @@
 import { getFirestore } from 'firebase-admin/firestore'
 import { isExistingId, isExistingEmail } from 'lib/exist'
-import HttpException from 'exceptions/http'
 import { randomBytes } from 'crypto'
 import { getDocumentId, getEncryptedPassword } from 'lib/encryption'
+import createError from 'http-errors'
 
 import type { Request, Response, NextFunction } from 'express'
 import type UserDto from './user.dto'
@@ -24,17 +24,17 @@ export default async function (
 
   try {
     if (new Date(body.birth).getTime() >= Date.now()) {
-      throw new HttpException(400, 'invalid birth')
+      return next(createError(400, 'invalid birth'))
     }
 
     const id: string = getDocumentId(body.email)
 
     if (await isExistingEmail(id)) {
-      throw new HttpException(400, 'existing email')
+      return next(createError(400, 'existing email'))
     }
 
     if (await isExistingId(body.id)) {
-      throw new HttpException(400, 'existing id')
+      return next(createError(400, 'existing id'))
     }
 
     body.salt = randomBytes(128).toString('base64')
@@ -48,15 +48,14 @@ export default async function (
     await getFirestore().collection('users').doc(id).set(body)
 
     response.jsend.success({ message: 'sucess' })
-  } catch (error: any) {
-    console.log(error.message)
-
-    next(
-      error instanceof HttpException
-        ? error
-        : new HttpException(500, 'server error')
+  } catch (error) {
+    return next(
+      createError(500, 'server error', {
+        detail: {
+          expose: false,
+          message: error,
+        },
+      })
     )
   }
-
-  return
 }

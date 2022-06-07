@@ -1,6 +1,6 @@
 import { getFirestore, Timestamp } from 'firebase-admin/firestore'
-import HttpException from 'exceptions/http'
 import { createHash, randomBytes } from 'crypto'
+import createError from 'http-errors'
 
 import type { Request, Response, NextFunction } from 'express'
 import type UserDto from '../users/user.dto'
@@ -29,11 +29,11 @@ export default async function (
       typeof user === 'undefined' ||
       user.verificationKey !== request.query.verificationKey
     ) {
-      throw new HttpException(400, 'invalid verificationKey')
+      return next(createError(400, 'invalid verificationKey'))
     }
 
     if (user.createdAt.seconds * 1000 + 180000 < Date.now()) {
-      throw new HttpException(400, 'expired verificationKey')
+      return next(createError(400, 'expired verificationKey'))
     }
 
     user.isEmailVerified = true
@@ -46,13 +46,11 @@ export default async function (
       .set(user)
 
     response.jsend.success({ message: 'sucess' })
-  } catch (error: any) {
-    console.log(error.message)
-
-    next(
-      error instanceof HttpException
-        ? error
-        : new HttpException(500, 'server error')
+  } catch (error) {
+    return next(
+      createError(500, 'server error', {
+        detail: { expose: false, message: error },
+      })
     )
   }
 

@@ -1,18 +1,16 @@
+import createError from 'http-errors'
 import { plainToInstance } from 'class-transformer'
 import { validate, ValidationError } from 'class-validator'
-import HttpException from 'exceptions/http'
 
 import type { Request, NextFunction, RequestHandler } from 'express'
 
 // bodyValidateHandler
 export default function (type: any): RequestHandler {
-  return (request: Request, response: unknown, next: NextFunction): void => {
+  return (request: Request, _response: unknown, next: NextFunction): void => {
     const body = request.body
 
     if (typeof body === 'undefined') {
-      next(new HttpException(400, 'no passed data'))
-
-      return
+      return next(createError(400, 'no passed data'))
     }
 
     validate(plainToInstance(type, body)).then(
@@ -29,13 +27,14 @@ export default function (type: any): RequestHandler {
           exceptions.push(Object.values(constraints).join(', '))
         }
 
-        next(
-          new HttpException(400, 'missing or invalid data', {
-            errors: exceptions,
+        return next(
+          createError(400, 'missing or invalid data', {
+            detail: {
+              expose: false,
+              message: exceptions,
+            },
           })
         )
-
-        return
       }
     )
   }

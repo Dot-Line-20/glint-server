@@ -1,6 +1,5 @@
 import { getFirestore } from 'firebase-admin/firestore'
 import { isExistingEmail } from 'lib/exist'
-import HttpException from 'exceptions/http'
 import createError from 'http-errors'
 import { randomBytes } from 'crypto'
 import { sign } from 'jsonwebtoken'
@@ -30,7 +29,7 @@ export default async function (
 
   try {
     if (!(await isExistingEmail(id))) {
-      next(createError(400, 'non-existing email'))
+      return next(createError(400, 'non-existing email'))
     }
 
     const user: User = (
@@ -38,11 +37,11 @@ export default async function (
     ).data() as User
 
     if (typeof user.password !== 'string') {
-      throw new HttpException(400, 'temporary user')
+      return next(createError(400, 'temporary user'))
     }
 
     if (user.password !== getEncryptedPassword(body.password, user.salt)) {
-      throw new HttpException(400, 'non-matching password')
+      return next(createError(400, 'non-matching password'))
     }
 
     if (typeof user.tokenKey !== 'string') {
@@ -74,15 +73,7 @@ export default async function (
         }
       ),
     })
-  } catch (error: any) {
-    console.log(error.message)
-
-    next(
-      error instanceof HttpException
-        ? error
-        : new HttpException(500, 'server error')
-    )
+  } catch (error) {
+    return next(createError(500, 'server error'))
   }
-
-  return
 }

@@ -6,7 +6,7 @@
     "node": "16.x"
   },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development NODE_PATH=src nodemon",
+    "dev": "cross-env NODE_ENV=development NODE_PATH=src nodemon src/server.ts",
     "start": "npm run build && cross-env NODE_ENV=production NODE_PATH=dist node dist/server.js",
     "build": "rm -fr dist & tsc -p .",
     "lint": "eslint .",
@@ -56,8 +56,5 @@
     "prettier": "2.6.0",
     "ts-node": "^10.5.0",
     "typescript": "^4.5.5"
-  },
-  "nodemonConfig": {
-    "exec": "ts-node --files -r tsconfig-paths/register ./src/server.ts"
   }
 }
