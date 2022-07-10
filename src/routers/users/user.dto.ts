@@ -16,7 +16,7 @@ export default class {
   @Length(1, 20)
   public name!: string
 
-  @Matches(/^[0-9A-z_]+$/, {
+  @Matches(/^[0-9A-z_]{4,15}$/, {
     message: 'id must contain only letters and numbers with underscore',
   })
   @Length(4, 15)
