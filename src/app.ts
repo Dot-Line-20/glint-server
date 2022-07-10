@@ -19,7 +19,7 @@ export default class {
   }
 
   private initializeRouter(): void {
-    for (const { root, routers } of controllers) {
+    for (const { root, routers } of controllers()) {
       for (const {
         path,
         method,
