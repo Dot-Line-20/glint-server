@@ -1,4 +1,4 @@
-import express, { Request, NextFunction } from 'express'
+import express, { Request, NextFunction, RequestHandler } from 'express'
 import { initializeApp, applicationDefault } from 'firebase-admin/app'
 import errorHandler from 'middleware/error'
 import controllers from './routers'
@@ -30,18 +30,19 @@ export default class {
       } of routers) {
         this.app[method](
           join(root, path),
-          [
-            (request: Request, response: unknown, next: NextFunction): void => {
-              request.config = config
-              next()
-            },
-            ...middleware,
-          ],
+          [this.#addConfig(config), ...middleware],
           handler
         )
       }
     }
   }
+
+  #addConfig =
+    (config: unknown): RequestHandler =>
+    (request: Request, _response: unknown, next: NextFunction): void => {
+      request.config = config
+      next()
+    }
 
   private connectFireStore(): void {
     initializeApp({
