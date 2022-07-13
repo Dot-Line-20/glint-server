@@ -4,6 +4,7 @@ import createError from 'http-errors'
 import { randomBytes } from 'crypto'
 import { sign } from 'jsonwebtoken'
 import { getDocumentId, getEncryptedPassword } from 'lib/encryption'
+import { ACCESS_TOKEN_KEY } from 'lib/config'
 
 import type { Request, Response, NextFunction } from 'express'
 import type LoginDto from './login.dto'
@@ -67,7 +68,7 @@ export default async function (
         {
           id: user['id'],
         },
-        process.env.ACCESS_TOKEN_KEY,
+        ACCESS_TOKEN_KEY,
         {
           expiresIn: '1h',
         }

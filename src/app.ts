@@ -4,6 +4,7 @@ import errorHandler from 'middleware/error'
 import controllers from './routers'
 import { join } from 'path/posix'
 import { middleware as jsendMiddleware } from 'jsend'
+import { PORT, FIRESTORE_URL } from './lib/config'
 
 // App
 export default class {
@@ -45,7 +46,7 @@ export default class {
   private connectFireStore(): void {
     initializeApp({
       credential: applicationDefault(),
-      databaseURL: process.env.FIRESTORE_URL,
+      databaseURL: FIRESTORE_URL,
     })
   }
 
@@ -59,8 +60,6 @@ export default class {
   }
 
   public listen(): void {
-    const PORT: string = process.env.PORT || '3000'
-
     this.app.listen(PORT, (): void => {
       console.log('listening on port ' + PORT)
     })
