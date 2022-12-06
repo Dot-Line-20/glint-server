@@ -45,7 +45,7 @@
     "@types/jest": "^28.1.7",
     "@types/jsend": "^1.0.29",
     "@types/jsonwebtoken": "^8.5.8",
-    "@types/node": "^18.0.4",
+    "@types/node": "^18.11.11",
     "@types/validator": "^13.7.4",
     "@typescript-eslint/eslint-plugin": "^5.30.6",
     "@typescript-eslint/parser": "^5.30.6",
